@@ -1,0 +1,14 @@
+#!/bin/bash
+# /etc/rc.local
+
+setfont cyr-sun16
+
+# Запуск скрипта установки
+if [ -x /root/install.sh ]; then
+  chmod +x install.sh
+  chmod +x install-pkg.sh
+  root/install.sh
+  root/install-pkg.sh
+fi
+
+exit 0

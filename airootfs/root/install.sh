@@ -25,7 +25,12 @@ pacstrap /mnt base linux linux-firmware sof-firmware base-devel grub efibootmgr 
 # Автоматическое монтирование после входа в систему
 genfstab /mnt > /mnt/etc/fstab
 # Копирования файла с установкой пакетов
-cp install-pkg.sh /mnt
+cp install-pkg.sh /mnt/home/user
+cp -r hyrp /mnt/home/user
+cp -r fish /mnt/home/user
+cp -r waybar /mnt/home/user
+cp -r wofi /mnt/home/user
+cp -r yay /mnt/home/user
 
 # Выполняем chroot
 arch-chroot /mnt /bin/bash <<EOF

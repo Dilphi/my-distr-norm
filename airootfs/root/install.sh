@@ -5,63 +5,83 @@ if [ "$(id -u)" -ne 0 ]; then
   echo "Скрипт должен быть запущен от имени root!" 1>&2
   exit 1
 fi
-# Делаем нормальный шрифт для кириллицы
+
+# Показываем список дисков
+echo "Доступные диски:"
+lsblk -d -e 7,11 -o NAME,SIZE,MODEL
+echo ""
+read -p "Введите диск для установки (например: sda или nvme0n1): " DISK
+
+# Проверяем, что диск существует
+if [ ! -b "/dev/$DISK" ]; then
+  echo "Указанный диск /dev/$DISK не найден!"
+  exit 1
+fi
+
+# Объявляем переменные для разделов
+BOOT="/dev/${DISK}p1"
+SWAP="/dev/${DISK}p2"
+ROOT="/dev/${DISK}p3"
+
+# Если диск не NVMe, то разделы без `p`
+if [[ "$DISK" =~ ^sd[a-z]$ ]]; then
+  BOOT="/dev/${DISK}1"
+  SWAP="/dev/${DISK}2"
+  ROOT="/dev/${DISK}3"
+fi
+
+# Настройка шрифта
 setfont cyr-sun16
-# Разметка расчитанная на установку HDD если у вас он то измените на sdaX (вместо х номер), если его нет то не трогать
-cfdisk /dev/nvme0n1
-# Фарматируем для загрузчика
-mkfs.fat -F 32 /dev/nvme0n1p1
-# Подкачка для надёжности
-mkswap /dev/nvme0n1p2
-# Форматирование основнова раздела системы
-mkfs.ext4 /dev/nvme0n1p3
-# Подключаем
-mount /dev/nvme0n1p3 /mnt
+
+# Разметка вручную
+cfdisk "/dev/$DISK"
+
+# Форматирование
+mkfs.fat -F 32 "$BOOT"
+mkswap "$SWAP"
+mkfs.ext4 "$ROOT"
+
+# Монтирование
+mount "$ROOT" /mnt
 mkdir -p /mnt/boot/efi
-mount /dev/nvme0n1p1 /mnt/boot/efi
-swapon /dev/nvme0n1p2
+mount "$BOOT" /mnt/boot/efi
+swapon "$SWAP"
+
 # Базавая установка сиситемы
 pacstrap /mnt base linux linux-firmware sof-firmware base-devel grub efibootmgr nano networkmanager
 # Автоматическое монтирование после входа в систему
 genfstab /mnt > /mnt/etc/fstab
 # Копирования файла с установкой пакетов
-cp install-pkg.sh /mnt/home/user
-cp -r hyrp /mnt/home/user
-cp -r fish /mnt/home/user
-cp -r waybar /mnt/home/user
-cp -r wofi /mnt/home/user
-cp -r yay /mnt/home/user
+cp install-pkg.sh /mnt
+cp -r hyrp /mnt
+cp -r fish /mnt
+cp -r waybar /mnt
+cp -r wofi /mnt
+cp -r yay /mnt
+cp install-hyprland.sh /mnt
+cp customize.sh /mnt
 
 # Выполняем chroot
 arch-chroot /mnt /bin/bash <<EOF
 ln -sf /usr/share/zoneinfo/Asia/Almaty /etc/localtime
 hwclock --systohc
 
-# Автоматическое раскомментирование строки в /etc/locale.gen
 sed -i 's/^#\(ru_RU.UTF-8 UTF-8\)/\1/' /etc/locale.gen
-
-# Генерация локалей
 locale-gen
 
-# Завершающие действия
 echo "LANG=ru_RU.UTF-8" > /etc/locale.conf
-
 echo "Arch" > /etc/hostname
 
-# Установка пароля root
 echo "root:1234" | chpasswd
-
-# Создание пользователя и настройка sudo с тем же паролем
 useradd -m -G wheel -s /bin/bash user
 echo "user:1234" | chpasswd
-
 sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
 systemctl enable NetworkManager
-grub-install /dev/nvme0n1
+grub-install /dev/$DISK
 grub-mkconfig -o /boot/grub/grub.cfg
-
 EOF
+
 
 umount -a
 # Завершающие шаги

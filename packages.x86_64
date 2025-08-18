@@ -35,6 +35,7 @@ wpa_supplicant
 iw
 iwd
 dhcpcd
+python
 modemmanager
 syslinux
 refind

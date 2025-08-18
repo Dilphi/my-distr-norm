@@ -1,0 +1,11 @@
+[Unit]
+Description=User Customization Service
+After=default.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/setup/customize.sh
+RemainAfterExit=true
+
+[Install]
+WantedBy=default.target

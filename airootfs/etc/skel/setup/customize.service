@@ -1,0 +1,14 @@
+[Unit]
+Description=User Customization Service
+After=graphical-session.target
+Requires=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/user/setup/customize.sh
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%U/bus
+RemainAfterExit=true
+
+[Install]
+WantedBy=default.target

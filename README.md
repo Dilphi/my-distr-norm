@@ -21,13 +21,21 @@
 
 
 ├── install.sh                 # Главный установочный скрипт
+
 ├── hypr/                     # Конфигурации Hyprland
+
 ├── fish/                     # Конфигурации fish
+
 ├── waybar/                   # Конфигурации панели
+
 ├── wofi/                     # Конфигурации меню
+
 ├── yay/                      # Сборка yay из AUR
+
 ├── customize.service         # systemd user service
+
 ├── sddm-astronaut-theme/     # Тема входа
+
 ├── Graphite-gtk-theme/       # GTK тема оформления
 
 🚀 Установка

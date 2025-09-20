@@ -83,7 +83,7 @@ Hyprland	KDE Plasma
     клонируйте репозитории
     git clone https://github.com/Dilphi/my-distr-norm
 
-    установитье archiso
+    установите archiso
     sudo pacman -S archiso
 
     откройте каталог
